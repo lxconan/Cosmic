@@ -157,7 +157,7 @@ public class Server {
 
     private volatile boolean availableDeveloperRoom = false;
     private boolean online = false;
-    public static long uptime = System.currentTimeMillis();
+    public static final long uptime = System.currentTimeMillis();
 
     private Server() {
         ReadWriteLock worldLock = new ReentrantReadWriteLock(true);
@@ -169,13 +169,21 @@ public class Server {
         this.lgnWLock = loginLock.writeLock();
     }
 
-    public int getCurrentTimestamp() {
-        return (int) (Server.getInstance().getCurrentTime() - Server.uptime);
-    }
+    /**
+     * Get the current time since server starts up. The `uptime` value is set when the server starts up.
+     *
+     * @return the current time since server starts up.
+     */
+    public int getCurrentTimestamp() { return (int) (Server.getInstance().getCurrentTime() - Server.uptime); }
 
-    public long getCurrentTime() {  // returns a slightly delayed time value, under frequency of UPDATE_INTERVAL
-        return serverCurrentTime;
-    }
+    /**
+     * returns a slightly delayed time value, under frequency of UPDATE_INTERVAL. This is because there are some tasks
+     * registered to update the `serverCurrentTime` value at least once every `UPDATE_INTERVAL` milliseconds. The
+     * default value of the `UPDATE_INTERVAL` is less than 1000 milliseconds. (please refer to the config.yaml file)
+     *
+     * @return slightly delayed time value.
+     */
+    public long getCurrentTime() { return serverCurrentTime; }
 
     public void updateCurrentTime() {
         serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
@@ -1477,23 +1485,6 @@ public class Server {
             lgnWLock.unlock();
         }
     }
-    
-    /*
-    public void deleteAccountEntry(Integer accountid) { is this even a thing?
-        lgnWLock.lock();
-        try {
-            accountCharacterCount.remove(accountid);
-            accountChars.remove(accountid);
-        } finally {
-            lgnWLock.unlock();
-        }
-    
-        for (World wserv : this.getWorlds()) {
-            wserv.clearAccountCharacterView(accountid);
-            wserv.unregisterAccountStorage(accountid);
-        }
-    }
-    */
 
     public SortedMap<Integer, List<Character>> loadAccountCharlist(int accountId, int visibleWorlds) {
         List<World> worlds = this.getWorlds();
