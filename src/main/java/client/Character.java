@@ -7923,27 +7923,27 @@ public class Character extends AbstractCharacterObject {
             int tap = remainingAp + str + dex + int_ + luk, tsp = 1;
             int tstr = 4, tdex = 4, tint = 4, tluk = 4;
 
-            switch (job.getId()) {
-                case 100:
-                case 1100:
-                case 2100:
+            switch (job) {
+                case Job.WARRIOR:
+                case Job.DAWNWARRIOR1:
+                case Job.ARAN1:
                     tstr = 35;
                     tsp += ((getLevel() - 10) * 3);
                     break;
-                case 200:
-                case 1200:
+                case Job.MAGICIAN:
+                case Job.BLAZEWIZARD1:
                     tint = 20;
                     tsp += ((getLevel() - 8) * 3);
                     break;
-                case 300:
-                case 1300:
-                case 400:
-                case 1400:
+                case Job.BOWMAN:
+                case Job.WINDARCHER1:
+                case Job.THIEF:
+                case Job.NIGHTWALKER1:
                     tdex = 25;
                     tsp += ((getLevel() - 10) * 3);
                     break;
-                case 500:
-                case 1500:
+                case Job.PIRATE:
+                case Job.THUNDERBREAKER1:
                     tdex = 20;
                     tsp += ((getLevel() - 10) * 3);
                     break;
@@ -7957,7 +7957,7 @@ public class Character extends AbstractCharacterObject {
             if (tap >= 0) {
                 updateStrDexIntLukSp(tstr, tdex, tint, tluk, tap, tsp, GameConstants.getSkillBook(job.getId()));
             } else {
-                log.warn("Chr {} tried to have its stats reset without enough AP available");
+                log.warn("Chr {} tried to have its stats reset without enough AP available", getId());
             }
         } finally {
             statWlock.unlock();
