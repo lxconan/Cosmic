@@ -5105,24 +5105,6 @@ public class Character extends AbstractCharacterObject {
         return id;
     }
 
-    public static int getAccountIdByName(String name) {
-        final int id;
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT accountid FROM characters WHERE name = ?")) {
-            ps.setString(1, name);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    return -1;
-                }
-                id = rs.getInt("accountid");
-            }
-            return id;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
     public static int getIdByName(String name) {
         final int id;
         try (Connection con = DatabaseConnection.getConnection();

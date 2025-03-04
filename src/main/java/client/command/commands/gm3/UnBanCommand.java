@@ -26,6 +26,7 @@ package client.command.commands.gm3;
 import client.Character;
 import client.Client;
 import client.command.Command;
+import database.characters.CharacterDao;
 import tools.DatabaseConnection;
 
 import java.sql.Connection;
@@ -36,6 +37,8 @@ public class UnBanCommand extends Command {
         setDescription("Unban a player.");
     }
 
+    private final CharacterDao characterDao = CharacterDao.instance;
+
     @Override
     public void execute(Client c, String[] params) {
         Character player = c.getPlayer();
@@ -45,7 +48,7 @@ public class UnBanCommand extends Command {
         }
 
         try (Connection con = DatabaseConnection.getConnection()) {
-            int aid = Character.getAccountIdByName(params[0]);
+            int aid = characterDao.getAccountIdByName(params[0]);
 
             try (PreparedStatement p = con.prepareStatement("UPDATE accounts SET banned = -1 WHERE id = " + aid)) {
                 p.executeUpdate();
