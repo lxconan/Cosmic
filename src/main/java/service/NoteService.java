@@ -3,7 +3,7 @@ package service;
 import client.Character;
 import database.DaoException;
 import database.note.NoteDao;
-import model.Note;
+import model.NoteEntity;
 import net.packet.out.ShowNotesPacket;
 import net.server.Server;
 import org.slf4j.Logger;
@@ -28,7 +28,7 @@ public class NoteService {
      * @return Send success
      */
     public boolean sendNormal(String message, String senderName, String receiverName) {
-        Note normalNote = Note.createNormal(message, senderName, receiverName, Server.getInstance().getCurrentTime());
+        NoteEntity normalNote = NoteEntity.createNormal(message, senderName, receiverName, Server.getInstance().getCurrentTime());
         return send(normalNote);
     }
 
@@ -38,11 +38,11 @@ public class NoteService {
      * @return Send success
      */
     public boolean sendWithFame(String message, String senderName, String receiverName) {
-        Note noteWithFame = Note.createGift(message, senderName, receiverName, Server.getInstance().getCurrentTime());
+        NoteEntity noteWithFame = NoteEntity.createGift(message, senderName, receiverName, Server.getInstance().getCurrentTime());
         return send(noteWithFame);
     }
 
-    private boolean send(Note note) {
+    private boolean send(NoteEntity note) {
         // TODO: handle the following cases (originally listed at PacketCreator#noteError)
         /*
          *  0 = Player online, use whisper
@@ -68,7 +68,7 @@ public class NoteService {
             throw new IllegalArgumentException("Unable to show notes - chr is null");
         }
 
-        List<Note> notes = getNotes(chr.getName());
+        List<NoteEntity> notes = getNotes(chr.getName());
         if (notes.isEmpty()) {
             return;
         }
@@ -76,8 +76,8 @@ public class NoteService {
         chr.sendPacket(new ShowNotesPacket(notes));
     }
 
-    private List<Note> getNotes(String to) {
-        final List<Note> notes;
+    private List<NoteEntity> getNotes(String to) {
+        final List<NoteEntity> notes;
         try {
             notes = noteDao.findAllByTo(to);
         } catch (DaoException e) {
@@ -98,7 +98,7 @@ public class NoteService {
      * @param noteId Id of note to discard
      * @return Discarded note. Empty optional if failed to discard.
      */
-    public Optional<Note> delete(int noteId) {
+    public Optional<NoteEntity> delete(int noteId) {
         try {
             return noteDao.delete(noteId);
         } catch (DaoException e) {

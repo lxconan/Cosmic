@@ -1,6 +1,6 @@
 package net.packet.out;
 
-import model.Note;
+import model.NoteEntity;
 import net.opcodes.SendOpcode;
 import net.packet.ByteBufOutPacket;
 
@@ -11,7 +11,7 @@ import static tools.PacketCreator.getTime;
 
 public final class ShowNotesPacket extends ByteBufOutPacket {
 
-    public ShowNotesPacket(List<Note> notes) {
+    public ShowNotesPacket(List<NoteEntity> notes) {
         super(SendOpcode.MEMO_RESULT);
         Objects.requireNonNull(notes);
 
@@ -20,7 +20,7 @@ public final class ShowNotesPacket extends ByteBufOutPacket {
         notes.forEach(this::writeNote);
     }
 
-    private void writeNote(Note note) {
+    private void writeNote(NoteEntity note) {
         writeInt(note.id());
         writeString(note.from() + " "); //Stupid nexon forgot space lol
         writeString(note.message());

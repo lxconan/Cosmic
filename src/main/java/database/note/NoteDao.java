@@ -1,7 +1,7 @@
 package database.note;
 
 import database.DaoException;
-import model.Note;
+import model.NoteEntity;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.JdbiException;
 import tools.DatabaseConnection;
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class NoteDao {
 
-    public void save(Note note) {
+    public void save(NoteEntity note) {
         try (Handle handle = DatabaseConnection.getHandle()) {
             handle.createUpdate("""
                             INSERT INTO notes (`message`, `from`, `to`, `timestamp`, `fame`, `deleted`)
@@ -28,7 +28,7 @@ public class NoteDao {
         }
     }
 
-    public List<Note> findAllByTo(String to) {
+    public List<NoteEntity> findAllByTo(String to) {
         try (Handle handle = DatabaseConnection.getHandle()) {
             return handle.createQuery("""
                             SELECT * 
@@ -36,16 +36,16 @@ public class NoteDao {
                             WHERE `deleted` = 0
                             AND `to` = ?""")
                     .bind(0, to)
-                    .mapTo(Note.class)
+                    .mapTo(NoteEntity.class)
                     .list();
         } catch (JdbiException e) {
             throw new DaoException("Failed to find notes sent to: %s".formatted(to), e);
         }
     }
 
-    public Optional<Note> delete(int id) {
+    public Optional<NoteEntity> delete(int id) {
         try (Handle handle = DatabaseConnection.getHandle()) {
-            Optional<Note> note = findById(handle, id);
+            Optional<NoteEntity> note = findById(handle, id);
             if (note.isEmpty()) {
                 return Optional.empty();
             }
@@ -57,8 +57,8 @@ public class NoteDao {
         }
     }
 
-    private Optional<Note> findById(Handle handle, int id) {
-        final Optional<Note> note;
+    private Optional<NoteEntity> findById(Handle handle, int id) {
+        final Optional<NoteEntity> note;
         try {
             note = handle.createQuery("""
                             SELECT *
@@ -66,7 +66,7 @@ public class NoteDao {
                             WHERE `deleted` = 0
                             AND `id` = ?""")
                     .bind(0, id)
-                    .mapTo(Note.class)
+                    .mapTo(NoteEntity.class)
                     .findOne();
         } catch (JdbiException e) {
             throw new DaoException("Failed find note with id %s".formatted(id), e);

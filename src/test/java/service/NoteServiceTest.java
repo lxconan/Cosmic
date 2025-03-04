@@ -1,7 +1,7 @@
 package service;
 
 import database.note.NoteDao;
-import model.Note;
+import model.NoteEntity;
 import net.packet.out.ShowNotesPacket;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ class NoteServiceTest {
         boolean success = noteService.sendNormal(message, from, to);
 
         assertTrue(success);
-        var noteCaptor = ArgumentCaptor.forClass(Note.class);
+        var noteCaptor = ArgumentCaptor.forClass(NoteEntity.class);
         verify(noteDao).save(noteCaptor.capture());
         var note = noteCaptor.getValue();
         assertEquals(message, note.message());
@@ -67,7 +67,7 @@ class NoteServiceTest {
         boolean success = noteService.sendWithFame(message, from, to);
 
         assertTrue(success);
-        var noteCaptor = ArgumentCaptor.forClass(Note.class);
+        var noteCaptor = ArgumentCaptor.forClass(NoteEntity.class);
         verify(noteDao).save(noteCaptor.capture());
         var note = noteCaptor.getValue();
         assertEquals(message, note.message());
@@ -102,8 +102,8 @@ class NoteServiceTest {
         verify(chr).sendPacket(any(ShowNotesPacket.class));
     }
 
-    private Note anyNote() {
-        return new Note(1, "message", "from", "to", 100200300400L, 0);
+    private NoteEntity anyNote() {
+        return new NoteEntity(1, "message", "from", "to", 100200300400L, 0);
     }
 
     @Test
@@ -132,7 +132,7 @@ class NoteServiceTest {
         var note = anyNote();
         when(noteDao.delete(noteId)).thenReturn(Optional.of(note));
 
-        Optional<Note> deletedNote = noteDao.delete(noteId);
+        Optional<NoteEntity> deletedNote = noteDao.delete(noteId);
 
         assertTrue(deletedNote.isPresent());
         assertEquals(note, deletedNote.get());
@@ -142,7 +142,7 @@ class NoteServiceTest {
     void deleteNoteFailure() {
         when(noteDao.delete(anyInt())).thenThrow(daoException());
 
-        Optional<Note> deletedNote = noteService.delete(4382);
+        Optional<NoteEntity> deletedNote = noteService.delete(4382);
 
         assertTrue(deletedNote.isEmpty());
     }
