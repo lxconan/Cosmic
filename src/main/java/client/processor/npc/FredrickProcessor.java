@@ -30,6 +30,7 @@ import client.inventory.InventoryType;
 import client.inventory.Item;
 import client.inventory.ItemFactory;
 import client.inventory.manipulator.InventoryManipulator;
+import database.characters.CharacterDao;
 import net.server.Server;
 import net.server.world.World;
 import org.slf4j.Logger;
@@ -140,7 +141,7 @@ public class FredrickProcessor {
     private static void removeFredrickReminders(List<Pair<Integer, Integer>> expiredCids) {
         List<String> expiredCnames = new LinkedList<>();
         for (Pair<Integer, Integer> id : expiredCids) {
-            String name = Character.getNameById(id.getLeft());
+            String name = CharacterDao.instance.getNameById(id.getLeft());
             if (name != null) {
                 expiredCnames.add(name);
             }

@@ -78,6 +78,7 @@ import constants.skills.Shadower;
 import constants.skills.Sniper;
 import constants.skills.ThunderBreaker;
 import constants.skills.Warrior;
+import database.characters.CharacterDao;
 import net.packet.Packet;
 import net.server.PlayerBuffValueHolder;
 import net.server.PlayerCoolDownValueHolder;
@@ -187,7 +188,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -197,9 +197,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class Character extends AbstractCharacterObject {
     private static final Logger log = LoggerFactory.getLogger(Character.class);
     private static final String LEVEL_200 = "[Congrats] %s has reached Level %d! Congratulate %s on such an amazing achievement!";
-    private static final String[] BLOCKED_NAMES = {"admin", "owner", "moderator", "intern", "donor", "administrator", "FREDRICK", "help", "helper", "alert", "notice", "maplestory", "fuck", "wizet", "fucking", "negro", "fuk", "fuc", "penis", "pussy", "asshole", "gay",
-            "nigger", "homo", "suck", "cum", "shit", "shitty", "condom", "security", "official", "rape", "nigga", "sex", "tit", "boner", "orgy", "clit", "asshole", "fatass", "bitch", "support", "gamemaster", "cock", "gaay", "gm",
-            "operate", "master", "sysop", "party", "GameMaster", "community", "message", "event", "test", "meso", "Scania", "yata", "AsiaSoft", "henesys"};
 
     private int world;
     private int accountid, id, level;
@@ -356,6 +353,8 @@ public class Character extends AbstractCharacterObject {
     private boolean pendingNameChange; //only used to change name on logout, not to be relied upon elsewhere
     private long loginTime;
     private boolean chasing = false;
+
+    private final CharacterDao characterDao = CharacterDao.instance;
 
     private Character() {
         super.setListener(new AbstractCharacterListener() {
@@ -975,16 +974,6 @@ public class Character extends AbstractCharacterObject {
                 getMap().broadcastMessage(this, PacketCreator.cancelForeignBuff(getId(), buffstats), false);
             }
         }
-    }
-
-    public static boolean canCreateChar(String name) {
-        String lname = name.toLowerCase();
-        for (String nameTest : BLOCKED_NAMES) {
-            if (lname.contains(nameTest)) {
-                return false;
-            }
-        }
-        return getIdByName(name) < 0 && Pattern.compile("[a-zA-Z0-9]{3,12}").matcher(name).matches();
     }
 
     public boolean canDoor() {
@@ -5103,42 +5092,6 @@ public class Character extends AbstractCharacterObject {
 
     public int getId() {
         return id;
-    }
-
-    public static int getIdByName(String name) {
-        final int id;
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT id FROM characters WHERE name = ?")) {
-            ps.setString(1, name);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    return -1;
-                }
-                id = rs.getInt("id");
-            }
-            return id;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-    public static String getNameById(int id) {
-        final String name;
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT name FROM characters WHERE id = ?")) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    return null;
-                }
-                name = rs.getString("name");
-            }
-            return name;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public int getInitialSpawnpoint() {

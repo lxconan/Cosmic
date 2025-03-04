@@ -7,9 +7,15 @@ import tools.DatabaseConnection;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.JdbiException;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
 public class CharacterDao {
     public static final CharacterDao instance = new CharacterDao();
     private static final Logger log = LoggerFactory.getLogger(CharacterDao.class);
+
+    private CharacterDao() { }
 
     public int getAccountIdByName(String name) {
         try (Handle handle = DatabaseConnection.getHandle()) {
@@ -19,8 +25,44 @@ public class CharacterDao {
                     .findOne()
                     .orElse(-1);
         } catch (JdbiException e) {
-            log.warn("Failed to find accountid by character name: {}", name, e);
+            log.warn("Failed to find account id by character name: {}", name, e);
             return -1;
         }
+    }
+
+    public int getIdByName(String name) {
+        final int id;
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT id FROM characters WHERE name = ?")) {
+            ps.setString(1, name);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return -1;
+                }
+                id = rs.getInt("id");
+            }
+            return id;
+        } catch (Exception e) {
+            log.warn("Failed to find character id by name: {}", name, e);
+        }
+        return -1;
+    }
+
+    public String getNameById(int id) {
+        final String name;
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT name FROM characters WHERE id = ?")) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+                name = rs.getString("name");
+            }
+            return name;
+        } catch (Exception e) {
+            log.warn("Failed to find character name by id: {}", id, e);
+        }
+        return null;
     }
 }

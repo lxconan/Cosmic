@@ -27,17 +27,20 @@ import client.Character;
 import client.Client;
 import client.autoban.AutobanFactory;
 import client.command.Command;
+import database.characters.CharacterDao;
 
 public class IgnoredCommand extends Command {
     {
         setDescription("Show all characters being ignored in auto-ban alerts.");
     }
 
+    private final CharacterDao characterDao = CharacterDao.instance;
+
     @Override
     public void execute(Client c, String[] params) {
         Character player = c.getPlayer();
         for (int chrId : AutobanFactory.getIgnoredChrIds()) {
-            player.yellowMessage(Character.getNameById(chrId) + " is being ignored.");
+            player.yellowMessage(characterDao.getNameById(chrId) + " is being ignored.");
         }
     }
 }

@@ -24,6 +24,7 @@ package net.server.channel.handlers;
 import client.Character;
 import client.Client;
 import client.Ring;
+import client.creator.CreateCharacterNameValidator;
 import client.inventory.Equip;
 import client.inventory.Inventory;
 import client.inventory.InventoryType;
@@ -413,7 +414,7 @@ public final class CashOperationHandler extends AbstractPacketHandler {
                     if (cItem.getSN() == 50600000 && YamlConfig.config.server.ALLOW_CASHSHOP_NAME_CHANGE) {
                         p.readString(); //old name
                         String newName = p.readString();
-                        if (!Character.canCreateChar(newName) || chr.getLevel() < 10) { //(longest ban duration isn't tracked currently)
+                        if (!CreateCharacterNameValidator.instance.canCreateChar(newName) || chr.getLevel() < 10) { //(longest ban duration isn't tracked currently)
                             c.sendPacket(PacketCreator.showCashShopMessage((byte) 0));
                             c.enableCSActions();
                             return;

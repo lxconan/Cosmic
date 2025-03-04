@@ -43,7 +43,7 @@ public abstract class CharacterFactory {
             return -3;
         }
 
-        if (!Character.canCreateChar(name)) {
+        if (!CreateCharacterNameValidator.instance.canCreateChar(name)) {
             return -1;
         }
 

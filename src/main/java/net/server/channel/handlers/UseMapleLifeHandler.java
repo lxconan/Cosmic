@@ -21,6 +21,7 @@ package net.server.channel.handlers;
 
 import client.Character;
 import client.Client;
+import client.creator.CreateCharacterNameValidator;
 import net.AbstractPacketHandler;
 import net.packet.InPacket;
 import tools.PacketCreator;
@@ -29,6 +30,8 @@ import tools.PacketCreator;
  * @author RonanLana
  */
 public class UseMapleLifeHandler extends AbstractPacketHandler {
+    private final CreateCharacterNameValidator nameValidator = CreateCharacterNameValidator.instance;
+
     @Override
     public void handlePacket(InPacket p, Client c) {
         Character player = c.getPlayer();
@@ -43,7 +46,7 @@ public class UseMapleLifeHandler extends AbstractPacketHandler {
         player.setLastUsedCashItem(timeNow);
 
         String name = p.readString();
-        if (Character.canCreateChar(name)) {
+        if (nameValidator.canCreateChar(name)) {
             c.sendPacket(PacketCreator.sendMapleLifeCharacterInfo());
         } else {
             c.sendPacket(PacketCreator.sendMapleLifeNameError());

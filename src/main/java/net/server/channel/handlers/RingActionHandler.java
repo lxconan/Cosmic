@@ -30,6 +30,7 @@ import client.inventory.Item;
 import client.inventory.manipulator.InventoryManipulator;
 import client.processor.npc.DueyProcessor;
 import constants.id.ItemId;
+import database.characters.CharacterDao;
 import net.AbstractPacketHandler;
 import net.packet.InPacket;
 import net.server.channel.Channel;
@@ -58,6 +59,7 @@ public final class RingActionHandler extends AbstractPacketHandler {
     private static final Logger log = LoggerFactory.getLogger(RingActionHandler.class);
 
     private final NoteService noteService;
+    private final CharacterDao characterDao = CharacterDao.instance;
 
     public RingActionHandler(NoteService noteService) {
         this.noteService = noteService;
@@ -212,7 +214,7 @@ public final class RingActionHandler extends AbstractPacketHandler {
             partner.addMarriageRing(null);
         }
 
-        chr.dropMessage(5, "You have successfully break the marriage with " + Character.getNameById(partnerid) + ".");
+        chr.dropMessage(5, "You have successfully break the marriage with " + CharacterDao.instance.getNameById(partnerid) + ".");
 
         //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
         chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
@@ -262,7 +264,7 @@ public final class RingActionHandler extends AbstractPacketHandler {
         if (chr.haveItem(marriageitemid)) {
             InventoryManipulator.removeById(chr.getClient(), InventoryType.ETC, marriageitemid, (short) 1, false, false);
         }
-        chr.dropMessage(5, "You have successfully break the engagement with " + Character.getNameById(partnerid) + ".");
+        chr.dropMessage(5, "You have successfully break the engagement with " + CharacterDao.instance.getNameById(partnerid) + ".");
 
         //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
         chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
@@ -404,8 +406,8 @@ public final class RingActionHandler extends AbstractPacketHandler {
                 }
 
                 String groom = c.getPlayer().getName();
-                String bride = Character.getNameById(c.getPlayer().getPartnerId());
-                int guest = Character.getIdByName(name);
+                String bride = characterDao.getNameById(c.getPlayer().getPartnerId());
+                int guest = characterDao.getIdByName(name);
                 if (groom == null || bride == null || groom.equals("") || bride.equals("") || guest <= 0) {
                     c.getPlayer().dropMessage(5, "Unable to find " + name + "!");
                     return;
@@ -475,7 +477,7 @@ public final class RingActionHandler extends AbstractPacketHandler {
                     Pair<Integer, Integer> coupleId = c.getWorldServer().getWeddingCoupleForGuest(c.getPlayer().getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
                     if (coupleId != null) {
                         int groomId = coupleId.getLeft(), brideId = coupleId.getRight();
-                        c.sendPacket(WeddingPackets.sendWeddingInvitation(Character.getNameById(groomId), Character.getNameById(brideId)));
+                        c.sendPacket(WeddingPackets.sendWeddingInvitation(characterDao.getNameById(groomId), characterDao.getNameById(brideId)));
                     }
                 }
 

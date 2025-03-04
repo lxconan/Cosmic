@@ -59,6 +59,7 @@ import constants.skills.Buccaneer;
 import constants.skills.ChiefBandit;
 import constants.skills.Corsair;
 import constants.skills.ThunderBreaker;
+import database.characters.CharacterDao;
 import net.encryption.InitializationVector;
 import net.opcodes.SendOpcode;
 import net.packet.ByteBufOutPacket;
@@ -1138,14 +1139,6 @@ public class PacketCreator {
         return p;
     }
 
-    /**
-     * Gets a packet to spawn a special map object.
-     *
-     * @param summon
-     * @param skillLevel The level of the skill used.
-     * @param animated   Animated spawn?
-     * @return The spawn packet for the map object.
-     */
     public static Packet spawnSummon(Summon summon, boolean animated) {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_SPECIAL_MAPOBJECT);
         p.writeInt(summon.getOwner().getId());
@@ -1235,18 +1228,6 @@ public class PacketCreator {
         return serverMessage(type, (byte) 0, message, false, false, 0);
     }
 
-    /**
-     * Gets a server notice packet.
-     * <p>
-     * Possible values for <code>type</code>:<br> 0: [Notice]<br> 1: Popup<br>
-     * 2: Megaphone<br> 3: Super Megaphone<br> 4: Scrolling message at top<br>
-     * 5: Pink Text<br> 6: Lightblue Text
-     *
-     * @param type    The type of the notice.
-     * @param channel The channel this notice was sent on.
-     * @param message The message to convey.
-     * @return The server notice packet.
-     */
     public static Packet serverNotice(int type, String message, int npc) {
         return serverMessage(type, 0, message, false, false, npc);
     }
@@ -1650,15 +1631,6 @@ public class PacketCreator {
         return p;
     }
 
-    /**
-     * Gets a general chat packet.
-     *
-     * @param cidfrom The character ID who sent the chat.
-     * @param text    The text of the chat.
-     * @param whiteBG
-     * @param show
-     * @return The general chat packet.
-     */
     public static Packet getChatText(int cidfrom, String text, boolean gm, int show) {
         final OutPacket p = OutPacket.create(SendOpcode.CHATTEXT);
         p.writeInt(cidfrom);
@@ -2736,11 +2708,6 @@ public class PacketCreator {
         return p;
     }
 
-    /**
-     * @param chr
-     * @param isSelf
-     * @return
-     */
     public static Packet charInfo(Character chr) {
         //3D 00 0A 43 01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
         final OutPacket p = OutPacket.create(SendOpcode.CHAR_INFO);
@@ -2856,12 +2823,6 @@ public class PacketCreator {
         return p;
     }
 
-    /**
-     * @param cid
-     * @param statups
-     * @param mount
-     * @return
-     */
     public static Packet showMonsterRiding(int cid, Mount mount) { //Gtfo with this, this is just giveForeignBuff
         final OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
         p.writeInt(cid);
@@ -2875,23 +2836,7 @@ public class PacketCreator {
         p.writeByte(0); //Times you have been buffed
         return p;
     }
-        /*        p.writeInt(cid);
-             writeLongMask(mplew, statups);
-             for (Pair<BuffStat, Integer> statup : statups) {
-             if (morph) {
-             p.writeInt(statup.getRight().intValue());
-             } else {
-             p.writeShort(statup.getRight().shortValue());
-             }
-             }
-             p.writeShort(0);
-             p.writeByte(0);*/
 
-    /**
-     * @param c
-     * @param quest
-     * @return
-     */
     public static Packet forfeitQuest(short quest) {
         final OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
         p.writeByte(1);
@@ -2900,11 +2845,6 @@ public class PacketCreator {
         return p;
     }
 
-    /**
-     * @param c
-     * @param quest
-     * @return
-     */
     public static Packet completeQuest(short quest, long time) {
         final OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
         p.writeByte(1);
@@ -2913,14 +2853,6 @@ public class PacketCreator {
         p.writeLong(getTime(time));
         return p;
     }
-
-    /**
-     * @param c
-     * @param quest
-     * @param npc
-     * @param progress
-     * @return
-     */
 
     public static Packet updateQuestInfo(short quest, int npc) {
         final OutPacket p = OutPacket.create(SendOpcode.UPDATE_QUEST_INFO);
@@ -3258,12 +3190,6 @@ public class PacketCreator {
         return p;
     }
 
-    /**
-     * @param c
-     * @param shop
-     * @param owner
-     * @return
-     */
     public static Packet getPlayerShop(PlayerShop shop, boolean owner) {
         final OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInteractionHandler.Action.ROOM.getCode());
@@ -6807,8 +6733,8 @@ public class PacketCreator {
                 p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
                 p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
             }
-            p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? chr.getName() : Character.getNameById(chr.getPartnerId()), '\0', 13));
-            p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? Character.getNameById(chr.getPartnerId()) : chr.getName(), '\0', 13));
+            p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? chr.getName() : CharacterDao.instance.getNameById(chr.getPartnerId()), '\0', 13));
+            p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? CharacterDao.instance.getNameById(chr.getPartnerId()) : chr.getName(), '\0', 13));
         } else {
             p.writeShort(0);
         }
@@ -7358,12 +7284,6 @@ public class PacketCreator {
         return p;
     }
 
-    /**
-     * Sends a request to remove Mir<br>
-     *
-     * @param charid - Needs the specific Character ID
-     * @return The packet
-     */
     public static Packet removeDragon(int chrId) {
         OutPacket p = OutPacket.create(SendOpcode.REMOVE_DRAGON);
         p.writeInt(chrId);

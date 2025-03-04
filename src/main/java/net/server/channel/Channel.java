@@ -24,6 +24,7 @@ package net.server.channel;
 import client.Character;
 import config.YamlConfig;
 import constants.id.MapId;
+import database.characters.CharacterDao;
 import net.netty.ChannelServer;
 import net.packet.Packet;
 import net.server.PlayerStorage;
@@ -121,6 +122,8 @@ public final class Channel {
     private final Lock lock = new ReentrantLock(true);;
     private final Lock merchRlock;
     private final Lock merchWlock;
+
+    private final CharacterDao characterDao = CharacterDao.instance;
 
     public Channel(final int world, final int channel, long startTime) {
         this.world = world;
@@ -733,7 +736,7 @@ public final class Channel {
         Pair<Integer, Integer> coupleId = wserv.getMarriageQueuedCouple(ret);
         Pair<Boolean, Set<Integer>> typeGuests = wserv.removeMarriageQueued(ret);
 
-        Pair<String, String> couple = new Pair<>(Character.getNameById(coupleId.getLeft()), Character.getNameById(coupleId.getRight()));
+        Pair<String, String> couple = new Pair<>(characterDao.getNameById(coupleId.getLeft()), characterDao.getNameById(coupleId.getRight()));
         wserv.dropMessage(6, couple.getLeft() + " and " + couple.getRight() + "'s wedding is going to be started at " + (cathedral ? "Cathedral" : "Chapel") + " on Channel " + channel + ".");
 
         return new Pair<>(typeGuests.getLeft(), new Pair<>(ret, typeGuests.getRight()));

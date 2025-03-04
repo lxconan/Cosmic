@@ -10,6 +10,7 @@ import client.Character;
 import client.inventory.Item;
 import constants.id.ItemId;
 import constants.id.MapId;
+import database.characters.CharacterDao;
 import net.opcodes.SendOpcode;
 import net.packet.OutPacket;
 import net.packet.Packet;
@@ -293,8 +294,8 @@ public class WeddingPackets extends PacketCreator {
             p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
             p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
         }
-        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? chr.getName() : Character.getNameById(chr.getPartnerId()), '\0', 13));
-        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? Character.getNameById(chr.getPartnerId()) : chr.getName(), '\0', 13));
+        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? chr.getName() : CharacterDao.instance.getNameById(chr.getPartnerId()), '\0', 13));
+        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? CharacterDao.instance.getNameById(chr.getPartnerId()) : chr.getName(), '\0', 13));
 
         return p;
     }

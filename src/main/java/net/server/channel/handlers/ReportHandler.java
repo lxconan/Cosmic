@@ -21,8 +21,8 @@
  */
 package net.server.channel.handlers;
 
-import client.Character;
 import client.Client;
+import database.characters.CharacterDao;
 import net.AbstractPacketHandler;
 import net.packet.InPacket;
 import net.server.Server;
@@ -40,7 +40,9 @@ import java.time.Instant;
  * @author BubblesDev
  */
 public final class ReportHandler extends AbstractPacketHandler {
-    public final void handlePacket(InPacket p, Client c) {
+    private final CharacterDao characterDao = CharacterDao.instance;
+
+    public void handlePacket(InPacket p, Client c) {
         int type = p.readByte(); //00 = Illegal program claim, 01 = Conversation claim
         String victim = p.readString();
         int reason = p.readByte();
@@ -59,7 +61,7 @@ public final class ReportHandler extends AbstractPacketHandler {
                 return;
             }
             Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            addReport(c.getPlayer().getId(), Character.getIdByName(victim), 0, description, "");
+            addReport(c.getPlayer().getId(), characterDao.getIdByName(victim), 0, description, "");
         } else if (type == 1) {
             String chatlog = p.readString();
             if (chatlog == null) {
@@ -75,7 +77,7 @@ public final class ReportHandler extends AbstractPacketHandler {
                 }
             }
             Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            addReport(c.getPlayer().getId(), Character.getIdByName(victim), reason, description, chatlog);
+            addReport(c.getPlayer().getId(), characterDao.getIdByName(victim), reason, description, chatlog);
         } else {
             Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, c.getPlayer().getName() + " is probably packet editing. Got unknown report type, which is impossible."));
         }

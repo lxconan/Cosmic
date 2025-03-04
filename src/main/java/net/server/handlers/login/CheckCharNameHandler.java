@@ -23,6 +23,7 @@ package net.server.handlers.login;
 
 import client.Character;
 import client.Client;
+import client.creator.CreateCharacterNameValidator;
 import net.AbstractPacketHandler;
 import net.packet.InPacket;
 import tools.PacketCreator;
@@ -32,6 +33,6 @@ public final class CheckCharNameHandler extends AbstractPacketHandler {
     @Override
     public final void handlePacket(InPacket p, Client c) {
         String name = p.readString();
-        c.sendPacket(PacketCreator.charNameResponse(name, !Character.canCreateChar(name)));
+        c.sendPacket(PacketCreator.charNameResponse(name, !CreateCharacterNameValidator.instance.canCreateChar(name)));
     }
 }
