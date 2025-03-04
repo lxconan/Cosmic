@@ -198,6 +198,7 @@ import client.command.commands.gm6.ShutdownCommand;
 import client.command.commands.gm6.SpawnAllPNpcsCommand;
 import client.command.commands.gm6.SupplyRateCouponCommand;
 import client.command.commands.gm6.WarpWorldCommand;
+import config.YamlConfig;
 import constants.id.MapId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -276,7 +277,7 @@ public class CommandsExecutor {
             client.getPlayer().yellowMessage("Command '" + commandName + "' is not available. See @commands for a list of available commands.");
             return;
         }
-        if (client.getPlayer().gmLevel() < command.getRank()) {
+        if (!YamlConfig.config.server.ENABLE_ALL_COMMANDS && client.getPlayer().gmLevel() < command.getRank()) {
             client.getPlayer().yellowMessage("You do not have permission to use this command.");
             return;
         }
