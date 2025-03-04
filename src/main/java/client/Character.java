@@ -7912,7 +7912,14 @@ public class Character extends AbstractCharacterObject {
         visibleMapObjects.remove(mo);
     }
 
+    /**
+     * This method is used when the character would like to do their first job change.
+     *
+     * Since the game has the auto-assign AP features when the player was a beginner to save their time. The assigneed
+     * APs will be given back to the players when they do their first job change.
+     */
     public synchronized void resetStats() {
+        // If the server is not configured to use the auto-assign AP feature, then we don't need to do anything here.
         if (!YamlConfig.config.server.USE_AUTOASSIGN_STARTERS_AP) {
             return;
         }
