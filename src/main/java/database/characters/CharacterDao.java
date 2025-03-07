@@ -10,6 +10,7 @@ import org.jdbi.v3.core.JdbiException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class CharacterDao {
     public static final CharacterDao instance = new CharacterDao();
@@ -64,5 +65,16 @@ public class CharacterDao {
             log.warn("Failed to find character name by id: {}", id, e);
         }
         return null;
+    }
+
+    public void recordFameGivenLog(int fromCharacterId, int toCharacterId) {
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("INSERT INTO famelog (characterid, characterid_to) VALUES (?, ?)")) {
+            ps.setInt(1, fromCharacterId);
+            ps.setInt(2, toCharacterId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.warn("Failed to record fame given log from {} to {}", fromCharacterId, toCharacterId, e);
+        }
     }
 }

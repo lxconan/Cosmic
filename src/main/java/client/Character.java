@@ -6002,17 +6002,16 @@ public class Character extends AbstractCharacterObject {
         return script.equals(e);
     }
 
+    /**
+     * Indicate that the character has done giving fame to other characters, this method will update time record and
+     * log the fame record to the database.
+     *
+     * @param to The character that the fame is given to.
+     */
     public void hasGivenFame(Character to) {
         lastfametime = System.currentTimeMillis();
-        lastmonthfameids.add(Integer.valueOf(to.getId()));
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("INSERT INTO famelog (characterid, characterid_to) VALUES (?, ?)")) {
-            ps.setInt(1, getId());
-            ps.setInt(2, to.getId());
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        lastmonthfameids.add(to.getId());
+        characterDao.recordFameGivenLog(getId(), to.getId());
     }
 
     public boolean hasMerchant() {
