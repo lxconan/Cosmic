@@ -79,6 +79,7 @@ import constants.skills.Sniper;
 import constants.skills.ThunderBreaker;
 import constants.skills.Warrior;
 import database.characters.CharacterDao;
+import database.characters.CooldownsDao;
 import net.packet.Packet;
 import net.server.PlayerBuffValueHolder;
 import net.server.PlayerCoolDownValueHolder;
@@ -355,6 +356,7 @@ public class Character extends AbstractCharacterObject {
     private boolean chasing = false;
 
     private final CharacterDao characterDao = CharacterDao.instance;
+    private final CooldownsDao cooldownsDao = CooldownsDao.instance;
 
     private Character() {
         super.setListener(new AbstractCharacterListener() {
@@ -7929,23 +7931,10 @@ public class Character extends AbstractCharacterObject {
 
     public synchronized void saveCooldowns() {
         List<PlayerCoolDownValueHolder> listcd = getAllCooldowns();
-
         if (!listcd.isEmpty()) {
-            try (Connection con = DatabaseConnection.getConnection()) {
-                deleteWhereCharacterId(con, "DELETE FROM cooldowns WHERE charid = ?");
-                try (PreparedStatement ps = con.prepareStatement("INSERT INTO cooldowns (charid, SkillID, StartTime, length) VALUES (?, ?, ?, ?)")) {
-                    ps.setInt(1, getId());
-                    for (PlayerCoolDownValueHolder cooling : listcd) {
-                        ps.setInt(2, cooling.skillId);
-                        ps.setLong(3, cooling.startTime);
-                        ps.setLong(4, cooling.length);
-                        ps.addBatch();
-                    }
-                    ps.executeBatch();
-                }
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
+            int characterId = getId();
+            cooldownsDao.deleteCooldownForCharacter(characterId);
+            cooldownsDao.insertPlayerCooldowns(characterId, listcd);
         }
 
         Map<Disease, Pair<Long, MobSkill>> listds = getAllDiseases();
