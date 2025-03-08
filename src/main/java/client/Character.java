@@ -6217,7 +6217,7 @@ public class Character extends AbstractCharacterObject {
             return;
         }
 
-        int spGain = 3;
+        int spGain = YamlConfig.config.server.LEVEL_UP_SKILL_POINT;
         if (YamlConfig.config.server.USE_ENFORCE_JOB_SP_RANGE && !GameConstants.hasSPTable(job)) {
             spGain = getSpGain(spGain, job);
         }
@@ -6254,7 +6254,7 @@ public class Character extends AbstractCharacterObject {
                 effLock.unlock();
             }
         } else {
-            int remainingAp = 5;
+            int remainingAp = YamlConfig.config.server.LEVEL_UP_AP;
 
             if (isCygnus()) {
                 if (level > 10) {
@@ -6302,7 +6302,7 @@ public class Character extends AbstractCharacterObject {
         } else if (job.isA(Job.ARAN1)) {
             addhp += Randomizer.rand(44, 48);
             int aids = Randomizer.rand(4, 8);
-            addmp += aids + Math.floor(aids * 0.1);
+            addmp += aids + (int)Math.floor(aids * 0.1);
         }
         if (improvingMaxHPLevel > 0 && (job.isA(Job.WARRIOR) || job.isA(Job.PIRATE) || job.isA(Job.DAWNWARRIOR1) || job.isA(Job.THUNDERBREAKER1))) {
             addhp += improvingMaxHP.getEffect(improvingMaxHPLevel).getX();
