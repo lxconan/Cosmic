@@ -24,6 +24,7 @@ package client;
 
 import client.autoban.AutobanManager;
 import client.creator.CharacterFactoryRecipe;
+import client.creator.CreateCharacterNameValidator;
 import client.inventory.Equip;
 import client.inventory.Equip.StatUpgrade;
 import client.inventory.Inventory;
@@ -455,6 +456,17 @@ public class Character extends AbstractCharacterObject {
 
     public Job getJobStyle() {
         return getJobStyle((byte) ((this.getStr() > this.getDex()) ? 0x80 : 0x40));
+    }
+
+    /**
+     * You just cannot imagine that we have to keep this method because it is used by one of the task scripts.
+     *
+     * @param name The character name to use.
+     * @return true if the character name is valid, false otherwise.
+     */
+    @SuppressWarnings("unused")
+    public static boolean canCreateChar(String name) {
+        return CreateCharacterNameValidator.instance.canCreateChar(name);
     }
 
     public static Character getDefault(Client c) {
@@ -4672,9 +4684,7 @@ public class Character extends AbstractCharacterObject {
         return this.chalktext;
     }
 
-    public Client getClient() {
-        return client;
-    }
+    public Client getClient() { return client; }
 
     public AbstractPlayerInteraction getAbstractPlayerInteraction() {
         return client.getAbstractPlayerInteraction();
