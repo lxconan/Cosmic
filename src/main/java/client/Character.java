@@ -80,6 +80,7 @@ import constants.skills.ThunderBreaker;
 import constants.skills.Warrior;
 import database.characters.CharacterDao;
 import database.characters.CooldownsDao;
+import database.characters.PlayerDiseasesDao;
 import net.packet.Packet;
 import net.server.PlayerBuffValueHolder;
 import net.server.PlayerCoolDownValueHolder;
@@ -357,6 +358,7 @@ public class Character extends AbstractCharacterObject {
 
     private final CharacterDao characterDao = CharacterDao.instance;
     private final CooldownsDao cooldownsDao = CooldownsDao.instance;
+    private final PlayerDiseasesDao playerDiseasesDao = PlayerDiseasesDao.instance;
 
     private Character() {
         super.setListener(new AbstractCharacterListener() {
@@ -7930,36 +7932,18 @@ public class Character extends AbstractCharacterObject {
     }
 
     public synchronized void saveCooldowns() {
-        List<PlayerCoolDownValueHolder> listcd = getAllCooldowns();
-        if (!listcd.isEmpty()) {
-            int characterId = getId();
+        List<PlayerCoolDownValueHolder> allCooldowns = getAllCooldowns();
+        int characterId = getId();
+
+        if (!allCooldowns.isEmpty()) {
             cooldownsDao.deleteCooldownForCharacter(characterId);
-            cooldownsDao.insertPlayerCooldowns(characterId, listcd);
+            cooldownsDao.insertPlayerCooldowns(characterId, allCooldowns);
         }
 
-        Map<Disease, Pair<Long, MobSkill>> listds = getAllDiseases();
-        if (!listds.isEmpty()) {
-            try (Connection con = DatabaseConnection.getConnection()) {
-                deleteWhereCharacterId(con, "DELETE FROM playerdiseases WHERE charid = ?");
-                try (PreparedStatement ps = con.prepareStatement("INSERT INTO playerdiseases (charid, disease, mobskillid, mobskilllv, length) VALUES (?, ?, ?, ?, ?)")) {
-                    ps.setInt(1, getId());
-
-                    for (Entry<Disease, Pair<Long, MobSkill>> e : listds.entrySet()) {
-                        ps.setInt(2, e.getKey().ordinal());
-
-                        MobSkill ms = e.getValue().getRight();
-                        MobSkillId msId = ms.getId();
-                        ps.setInt(3, msId.type().getId());
-                        ps.setInt(4, msId.level());
-                        ps.setInt(5, e.getValue().getLeft().intValue());
-                        ps.addBatch();
-                    }
-
-                    ps.executeBatch();
-                }
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
+        Map<Disease, Pair<Long, MobSkill>> allDiseases = getAllDiseases();
+        if (!allDiseases.isEmpty()) {
+            playerDiseasesDao.deleteDiseasesForCharacter(characterId);
+            playerDiseasesDao.insertPlayerDiseases(characterId, allDiseases);
         }
     }
 
