@@ -123,7 +123,6 @@ import server.events.gm.Ola;
 import server.life.BanishInfo;
 import server.life.MobSkill;
 import server.life.MobSkillFactory;
-import server.life.MobSkillId;
 import server.life.MobSkillType;
 import server.life.Monster;
 import server.life.PlayerNPC;
@@ -570,6 +569,17 @@ public class Character extends AbstractCharacterObject {
         }
     }
 
+    /**
+     * <p>The method <code>toggleRecvPartySearchInvite</code> toggles the ability of a character to receive party search
+     * invites. It updates the <code>canRecvPartySearchInvite</code> flag to its opposite value. If the flag is set to
+     * <code>true</code>, it attaches the player to the party search coordinator if the player is not already in a party.
+     * If the flag is set to <code>false</code>, it detaches the player from the party search coordinator.</p>
+     *
+     * <p>This method should not be deleted since it is used by task scripts.</p>
+     *
+     * @return The method returns the updated value of the <code>canRecvPartySearchInvite</code> flag.
+     */
+    @SuppressWarnings("unused")
     public boolean toggleRecvPartySearchInvite() {
         canRecvPartySearchInvite = !canRecvPartySearchInvite;
 
@@ -582,9 +592,18 @@ public class Character extends AbstractCharacterObject {
         return canRecvPartySearchInvite;
     }
 
-    public boolean isRecvPartySearchInviteEnabled() {
-        return canRecvPartySearchInvite;
-    }
+    /**
+     * <p>The <code>canRecvPartySearchInvite</code> variable is a boolean flag that indicates whether the character can
+     * receive party search invites. If <code>true</code>, the character is eligible to receive party search invites;
+     * if <code>false</code>, the character will not receive such invites. This variable is used to manage the
+     * character's availability for party search invitations within the game.</p>
+     *
+     * <p>This method should not be deleted because it is used by task scripts.</p>
+     *
+     * @return Whether the character can receive party search invites.
+     */
+    @SuppressWarnings("unused")
+    public boolean isRecvPartySearchInviteEnabled() { return canRecvPartySearchInvite; }
 
     public void resetPartySearchInvite(int fromLeaderid) {
         disabledPartySearchInvites.remove(fromLeaderid);
@@ -630,7 +649,7 @@ public class Character extends AbstractCharacterObject {
         effLock.lock();
         chrLock.lock();
         try {
-            this.coolDowns.put(Integer.valueOf(skillId), new CooldownValueHolder(skillId, startTime, length));
+            this.coolDowns.put(skillId, new CooldownValueHolder(skillId, startTime, length));
         } finally {
             chrLock.unlock();
             effLock.unlock();
@@ -700,6 +719,18 @@ public class Character extends AbstractCharacterObject {
         return false;
     }
 
+    /**
+     * <p>Adds dojo points to the character based on the provided map ID.</p>
+     *
+     * <p>The method calculates the points to be added based on the map ID and the current dojo points of the character.
+     * If the character's dojo points are less than 17000, points are added based on the map ID.</p>
+     *
+     * <p>This method should not be deleted because it is used by task scripts.</p>
+     *
+     * @param mapid The ID of the map where the dojo points are being added.
+     * @return The number of points added to the character.
+     */
+    @SuppressWarnings("unused")
     public int addDojoPointsByMap(int mapid) {
         int pts = 0;
         if (dojoPoints < 17000) {
@@ -762,14 +793,14 @@ public class Character extends AbstractCharacterObject {
             ps.setInt(2, accountid);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Error banning character", e);
         }
     }
 
     public static boolean ban(String id, String reason, boolean accountId) {
         try (Connection con = DatabaseConnection.getConnection()) {
             if (id.matches("/[0-9]{1,3}\\..*")) {
-                try (PreparedStatement ps = con.prepareStatement("INSERT INTO ipbans VALUES (DEFAULT, ?)")) {
+                try (PreparedStatement ps = con.prepareStatement("INSERT INTO ipbans VALUES (DEFAULT, ?, DEFAULT)")) {
                     ps.setString(1, id);
                     ps.executeUpdate();
                     return true;
