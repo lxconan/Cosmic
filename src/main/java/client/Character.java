@@ -2679,7 +2679,7 @@ public class Character extends AbstractCharacterObject {
         for (Entry<Disease, Pair<DiseaseValueHolder, MobSkill>> di : chrDiseases) {
             Disease disease = di.getKey();
             MobSkill skill = di.getValue().getRight();
-            final List<Pair<Disease, Integer>> debuff = Collections.singletonList(new Pair<>(disease, Integer.valueOf(skill.getX())));
+            final List<Pair<Disease, Integer>> debuff = Collections.singletonList(new Pair<>(disease, skill.getX()));
 
             if (disease != Disease.SLOW) {
                 map.broadcastMessage(PacketCreator.giveForeignDebuff(id, debuff, skill));
@@ -2696,7 +2696,7 @@ public class Character extends AbstractCharacterObject {
             for (Entry<Disease, Pair<Long, MobSkill>> di : chr.getAllDiseases().entrySet()) {
                 Disease disease = di.getKey();
                 MobSkill skill = di.getValue().getRight();
-                final List<Pair<Disease, Integer>> debuff = Collections.singletonList(new Pair<>(disease, Integer.valueOf(skill.getX())));
+                final List<Pair<Disease, Integer>> debuff = Collections.singletonList(new Pair<>(disease, skill.getX()));
 
                 if (disease != Disease.SLOW) {
                     this.sendPacket(PacketCreator.giveForeignDebuff(cid, debuff, skill));
@@ -2728,7 +2728,7 @@ public class Character extends AbstractCharacterObject {
                 sitChair(-1);
             }
 
-            final List<Pair<Disease, Integer>> debuff = Collections.singletonList(new Pair<>(disease, Integer.valueOf(skill.getX())));
+            final List<Pair<Disease, Integer>> debuff = Collections.singletonList(new Pair<>(disease, skill.getX()));
             sendPacket(PacketCreator.giveDebuff(debuff, skill));
 
             if (disease != Disease.SLOW) {
@@ -3350,7 +3350,7 @@ public class Character extends AbstractCharacterObject {
             if (mbsvh == null) {
                 return null;
             }
-            return Long.valueOf(mbsvh.startTime);
+            return mbsvh.startTime;
         } finally {
             chrLock.unlock();
             effLock.unlock();
@@ -3365,7 +3365,7 @@ public class Character extends AbstractCharacterObject {
             if (mbsvh == null) {
                 return null;
             }
-            return Integer.valueOf(mbsvh.value);
+            return mbsvh.value;
         } finally {
             chrLock.unlock();
             effLock.unlock();
@@ -9420,7 +9420,7 @@ public class Character extends AbstractCharacterObject {
         effLock.lock();
         chrLock.lock();
         try {
-            return coolDowns.containsKey(Integer.valueOf(skillId));
+            return coolDowns.containsKey(skillId);
         } finally {
             chrLock.unlock();
             effLock.unlock();
@@ -9752,7 +9752,7 @@ public class Character extends AbstractCharacterObject {
     }
 
     private void updateSingleStat(Stat stat, int newval, boolean itemReaction) {
-        sendPacket(PacketCreator.updatePlayerStats(Collections.singletonList(new Pair<>(stat, Integer.valueOf(newval))), itemReaction, this));
+        sendPacket(PacketCreator.updatePlayerStats(Collections.singletonList(new Pair<>(stat, newval)), itemReaction, this));
     }
 
     public void sendPacket(Packet packet) {
@@ -9870,7 +9870,7 @@ public class Character extends AbstractCharacterObject {
     }
 
     public boolean containsAreaInfo(int area, String info) {
-        Short area_ = Short.valueOf((short) area);
+        short area_ = (short) area;
         if (area_info.containsKey(area_)) {
             return area_info.get(area_).contains(info);
         }
@@ -9878,12 +9878,12 @@ public class Character extends AbstractCharacterObject {
     }
 
     public void updateAreaInfo(int area, String info) {
-        area_info.put(Short.valueOf((short) area), info);
+        area_info.put((short) area, info);
         sendPacket(PacketCreator.updateAreaInfo(area, info));
     }
 
     public String getAreaInfo(int area) {
-        return area_info.get(Short.valueOf((short) area));
+        return area_info.get((short) area);
     }
 
     public Map<Short, String> getAreaInfos() {
