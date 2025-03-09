@@ -2218,7 +2218,6 @@ public class Character extends AbstractCharacterObject {
             return false;
         }
 
-        final int accId = senderAccId;
         int world = 0;
         try (Connection con = DatabaseConnection.getConnection()) {
             try (PreparedStatement ps = con.prepareStatement("SELECT world FROM characters WHERE id = ?")) {
@@ -2273,7 +2272,7 @@ public class Character extends AbstractCharacterObject {
 
             try (PreparedStatement ps = con.prepareStatement("SELECT id, guildid, guildrank, name, allianceRank FROM characters WHERE id = ? AND accountid = ?")) {
                 ps.setInt(1, cid);
-                ps.setInt(2, accId);
+                ps.setInt(2, senderAccId);
 
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next() && rs.getInt("guildid") > 0) {
@@ -2393,7 +2392,7 @@ public class Character extends AbstractCharacterObject {
                 Character.deleteWhereCharacterId(con, "DELETE FROM `" + s + "` WHERE characterid = ?", cid);
             }
 
-            Server.getInstance().deleteCharacterEntry(accId, cid);
+            Server.getInstance().deleteCharacterEntry(senderAccId, cid);
             return true;
         } catch (SQLException e) {
             log.warn("Failed to delete character from database", e);
