@@ -2522,24 +2522,21 @@ public class Character extends AbstractCharacterObject {
                 stopChairTask();
             }
 
-            chairRecoveryTask = TimerManager.getInstance().register(new Runnable() {
-                @Override
-                public void run() {
-                    updateChairHealStats();
-                    final int healHP = localchairhp;
-                    final int healMP = localchairmp;
+            chairRecoveryTask = TimerManager.getInstance().register(() -> {
+                updateChairHealStats();
+                final int healHP = localchairhp;
+                final int healMP = localchairmp;
 
-                    if (Character.this.getHp() < localmaxhp) {
-                        byte recHP = (byte) (healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
+                if (Character.this.getHp() < localmaxhp) {
+                    byte recHP = (byte) (healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
 
-                        sendPacket(PacketCreator.showOwnRecovery(recHP));
-                        getMap().broadcastMessage(Character.this, PacketCreator.showRecovery(id, recHP), false);
-                    } else if (Character.this.getMp() >= localmaxmp) {
-                        stopChairTask();    // optimizing schedule management when player is already with full pool.
-                    }
-
-                    addMPHP(healHP, healMP);
+                    sendPacket(PacketCreator.showOwnRecovery(recHP));
+                    getMap().broadcastMessage(Character.this, PacketCreator.showRecovery(id, recHP), false);
+                } else if (Character.this.getMp() >= localmaxmp) {
+                    stopChairTask();    // optimizing schedule management when player is already with full pool.
                 }
+
+                addMPHP(healHP, healMP);
             }, healInterval, healInterval);
         } finally {
             chrLock.unlock();
