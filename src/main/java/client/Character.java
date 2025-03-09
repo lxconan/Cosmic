@@ -2193,6 +2193,7 @@ public class Character extends AbstractCharacterObject {
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void notifyRemoteChannel(Client c, int remoteChannel, int otherCid, BuddyList.BuddyOperation operation) {
         Character player = c.getPlayer();
         if (remoteChannel != -1) {
