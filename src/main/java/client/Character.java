@@ -1339,7 +1339,13 @@ public class Character extends AbstractCharacterObject {
         return warpMap;
     }
 
-    // for use ONLY inside OnUserEnter map scripts that requires a player to change map while still moving between maps.
+    /**
+     * Warps the character to a specified map while still moving between maps.
+     * This method is intended for use ONLY inside OnUserEnter map scripts.
+     *
+     * @param map The ID of the map to warp to.
+     */
+    @SuppressWarnings("unused")
     public void warpAhead(int map) {
         newWarpMap = map;
     }
