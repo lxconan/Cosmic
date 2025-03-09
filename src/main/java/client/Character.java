@@ -1161,15 +1161,13 @@ public class Character extends AbstractCharacterObject {
             }
         }
 
-        TimerManager.getInstance().schedule(new Runnable() {    // need to delay to ensure clientside has finished reloading character data
-            @Override
-            public void run() {
-                Character thisChr = Character.this;
-                MapleMap map = thisChr.getMap();
+        // need to delay to ensure clientside has finished reloading character data
+        TimerManager.getInstance().schedule(() -> {
+            Character thisChr = Character.this;
+            MapleMap map = thisChr.getMap();
 
-                if (map != null) {
-                    map.broadcastMessage(thisChr, PacketCreator.showForeignEffect(thisChr.getId(), 8), false);
-                }
+            if (map != null) {
+                map.broadcastMessage(thisChr, PacketCreator.showForeignEffect(thisChr.getId(), 8), false);
             }
         }, 777);
     }
