@@ -1017,7 +1017,7 @@ public class Character extends AbstractCharacterObject {
         if (client.getChannelServer().getPlayerStorage().getCharacterById(getId()) != null) {
             updateLocalStats();
             sendPacket(PacketCreator.cancelBuff(buffstats));
-            if (buffstats.size() > 0) {
+            if (!buffstats.isEmpty()) {
                 getMap().broadcastMessage(this, PacketCreator.cancelForeignBuff(getId(), buffstats), false);
             }
         }
@@ -1062,7 +1062,7 @@ public class Character extends AbstractCharacterObject {
             return FameStatus.OK;
         } else if (lastfametime >= System.currentTimeMillis() - 3600000 * 24) {
             return FameStatus.NOT_TODAY;
-        } else if (lastmonthfameids.contains(Integer.valueOf(from.getId()))) {
+        } else if (lastmonthfameids.contains(from.getId())) {
             return FameStatus.NOT_THIS_MONTH;
         } else {
             return FameStatus.OK;
