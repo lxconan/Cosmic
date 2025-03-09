@@ -2567,23 +2567,20 @@ public class Character extends AbstractCharacterObject {
     private void startExtraTaskInternal(final byte healHP, final byte healMP, final short healInterval) {
         extraRecInterval = healInterval;
 
-        extraRecoveryTask = TimerManager.getInstance().register(new Runnable() {
-            @Override
-            public void run() {
-                if (getBuffSource(BuffStat.HPREC) == -1 && getBuffSource(BuffStat.MPREC) == -1) {
-                    stopExtraTask();
-                    return;
-                }
-
-                if (Character.this.getHp() < localmaxhp) {
-                    if (healHP > 0) {
-                        sendPacket(PacketCreator.showOwnRecovery(healHP));
-                        getMap().broadcastMessage(Character.this, PacketCreator.showRecovery(id, healHP), false);
-                    }
-                }
-
-                addMPHP(healHP, healMP);
+        extraRecoveryTask = TimerManager.getInstance().register(() -> {
+            if (getBuffSource(BuffStat.HPREC) == -1 && getBuffSource(BuffStat.MPREC) == -1) {
+                stopExtraTask();
+                return;
             }
+
+            if (Character.this.getHp() < localmaxhp) {
+                if (healHP > 0) {
+                    sendPacket(PacketCreator.showOwnRecovery(healHP));
+                    getMap().broadcastMessage(Character.this, PacketCreator.showRecovery(id, healHP), false);
+                }
+            }
+
+            addMPHP(healHP, healMP);
         }, healInterval, healInterval);
     }
 
@@ -2867,27 +2864,24 @@ public class Character extends AbstractCharacterObject {
 
     public void diseaseExpireTask() {
         if (diseaseExpireTask == null) {
-            diseaseExpireTask = TimerManager.getInstance().register(new Runnable() {
-                @Override
-                public void run() {
-                    Set<Disease> toExpire = new LinkedHashSet<>();
+            diseaseExpireTask = TimerManager.getInstance().register(() -> {
+                Set<Disease> toExpire = new LinkedHashSet<>();
 
-                    chrLock.lock();
-                    try {
-                        long curTime = Server.getInstance().getCurrentTime();
+                chrLock.lock();
+                try {
+                    long curTime = Server.getInstance().getCurrentTime();
 
-                        for (Entry<Disease, Long> de : diseaseExpires.entrySet()) {
-                            if (de.getValue() < curTime) {
-                                toExpire.add(de.getKey());
-                            }
+                    for (Entry<Disease, Long> de : diseaseExpires.entrySet()) {
+                        if (de.getValue() < curTime) {
+                            toExpire.add(de.getKey());
                         }
-                    } finally {
-                        chrLock.unlock();
                     }
+                } finally {
+                    chrLock.unlock();
+                }
 
-                    for (Disease d : toExpire) {
-                        dispelDebuff(d);
-                    }
+                for (Disease d : toExpire) {
+                    dispelDebuff(d);
                 }
             }, 1500);
         }
@@ -2902,31 +2896,28 @@ public class Character extends AbstractCharacterObject {
 
     public void buffExpireTask() {
         if (buffExpireTask == null) {
-            buffExpireTask = TimerManager.getInstance().register(new Runnable() {
-                @Override
-                public void run() {
-                    Set<Entry<Integer, Long>> es;
-                    List<BuffStatValueHolder> toCancel = new ArrayList<>();
+            buffExpireTask = TimerManager.getInstance().register(() -> {
+                Set<Entry<Integer, Long>> es;
+                List<BuffStatValueHolder> toCancel = new ArrayList<>();
 
-                    effLock.lock();
-                    chrLock.lock();
-                    try {
-                        es = new LinkedHashSet<>(buffExpires.entrySet());
+                effLock.lock();
+                chrLock.lock();
+                try {
+                    es = new LinkedHashSet<>(buffExpires.entrySet());
 
-                        long curTime = Server.getInstance().getCurrentTime();
-                        for (Entry<Integer, Long> bel : es) {
-                            if (curTime >= bel.getValue()) {
-                                toCancel.add(buffEffects.get(bel.getKey()).entrySet().iterator().next().getValue());    //rofl
-                            }
+                    long curTime = Server.getInstance().getCurrentTime();
+                    for (Entry<Integer, Long> bel : es) {
+                        if (curTime >= bel.getValue()) {
+                            toCancel.add(buffEffects.get(bel.getKey()).entrySet().iterator().next().getValue());    //rofl
                         }
-                    } finally {
-                        chrLock.unlock();
-                        effLock.unlock();
                     }
+                } finally {
+                    chrLock.unlock();
+                    effLock.unlock();
+                }
 
-                    for (BuffStatValueHolder mbsvh : toCancel) {
-                        cancelEffect(mbsvh.effect, false, mbsvh.startTime);
-                    }
+                for (BuffStatValueHolder mbsvh : toCancel) {
+                    cancelEffect(mbsvh.effect, false, mbsvh.startTime);
                 }
             }, 1500);
         }
@@ -2941,27 +2932,24 @@ public class Character extends AbstractCharacterObject {
 
     public void skillCooldownTask() {
         if (skillCooldownTask == null) {
-            skillCooldownTask = TimerManager.getInstance().register(new Runnable() {
-                @Override
-                public void run() {
-                    Set<Entry<Integer, CooldownValueHolder>> es;
+            skillCooldownTask = TimerManager.getInstance().register(() -> {
+                Set<Entry<Integer, CooldownValueHolder>> es;
 
-                    effLock.lock();
-                    chrLock.lock();
-                    try {
-                        es = new LinkedHashSet<>(coolDowns.entrySet());
-                    } finally {
-                        chrLock.unlock();
-                        effLock.unlock();
-                    }
+                effLock.lock();
+                chrLock.lock();
+                try {
+                    es = new LinkedHashSet<>(coolDowns.entrySet());
+                } finally {
+                    chrLock.unlock();
+                    effLock.unlock();
+                }
 
-                    long curTime = Server.getInstance().getCurrentTime();
-                    for (Entry<Integer, CooldownValueHolder> bel : es) {
-                        CooldownValueHolder mcdvh = bel.getValue();
-                        if (curTime >= mcdvh.startTime + mcdvh.length) {
-                            removeCooldown(mcdvh.skillId);
-                            sendPacket(PacketCreator.skillCooldown(mcdvh.skillId, 0));
-                        }
+                long curTime = Server.getInstance().getCurrentTime();
+                for (Entry<Integer, CooldownValueHolder> bel : es) {
+                    CooldownValueHolder mcdvh = bel.getValue();
+                    if (curTime >= mcdvh.startTime + mcdvh.length) {
+                        removeCooldown(mcdvh.skillId);
+                        sendPacket(PacketCreator.skillCooldown(mcdvh.skillId, 0));
                     }
                 }
             }, 1500);
@@ -2977,82 +2965,79 @@ public class Character extends AbstractCharacterObject {
 
     public void expirationTask() {
         if (itemExpireTask == null) {
-            itemExpireTask = TimerManager.getInstance().register(new Runnable() {
-                @Override
-                public void run() {
-                    boolean deletedCoupon = false;
+            itemExpireTask = TimerManager.getInstance().register(() -> {
+                boolean deletedCoupon = false;
 
-                    long expiration, currenttime = System.currentTimeMillis();
-                    Set<Skill> keys = getSkills().keySet();
-                    for (Iterator<Skill> i = keys.iterator(); i.hasNext(); ) {
-                        Skill key = i.next();
-                        SkillEntry skill = getSkills().get(key);
-                        if (skill.expiration != -1 && skill.expiration < currenttime) {
-                            changeSkillLevel(key, (byte) -1, 0, -1);
+                long expiration, currenttime = System.currentTimeMillis();
+                Set<Skill> keys = getSkills().keySet();
+                for (Iterator<Skill> i = keys.iterator(); i.hasNext(); ) {
+                    Skill key = i.next();
+                    SkillEntry skill = getSkills().get(key);
+                    if (skill.expiration != -1 && skill.expiration < currenttime) {
+                        changeSkillLevel(key, (byte) -1, 0, -1);
+                    }
+                }
+
+                List<Item> toberemove = new ArrayList<>();
+                for (Inventory inv : inventory) {
+                    for (Item item : inv.list()) {
+                        expiration = item.getExpiration();
+
+                        if (expiration != -1 && (expiration < currenttime) && ((item.getFlag() & ItemConstants.LOCK) == ItemConstants.LOCK)) {
+                            short lock = item.getFlag();
+                            lock &= ~(ItemConstants.LOCK);
+                            item.setFlag(lock); //Probably need a check, else people can make expiring items into permanent items...
+                            item.setExpiration(-1);
+                            forceUpdateItem(item);   //TEST :3
+                        } else if (expiration != -1 && expiration < currenttime) {
+                            if (!ItemConstants.isPet(item.getItemId())) {
+                                sendPacket(PacketCreator.itemExpired(item.getItemId()));
+                                toberemove.add(item);
+                                if (ItemConstants.isRateCoupon(item.getItemId())) {
+                                    deletedCoupon = true;
+                                }
+                            } else {
+                                Pet pet = item.getPet();   // thanks Lame for noticing pets not getting despawned after expiration time
+                                if (pet != null) {
+                                    unequipPet(pet, true);
+                                }
+
+                                if (ItemConstants.isExpirablePet(item.getItemId())) {
+                                    sendPacket(PacketCreator.itemExpired(item.getItemId()));
+                                    toberemove.add(item);
+                                } else {
+                                    item.setExpiration(-1);
+                                    forceUpdateItem(item);
+                                }
+                            }
                         }
                     }
 
-                    List<Item> toberemove = new ArrayList<>();
-                    for (Inventory inv : inventory) {
-                        for (Item item : inv.list()) {
-                            expiration = item.getExpiration();
+                    if (!toberemove.isEmpty()) {
+                        for (Item item : toberemove) {
+                            InventoryManipulator.removeFromSlot(client, inv.getType(), item.getPosition(), item.getQuantity(), true);
+                        }
 
-                            if (expiration != -1 && (expiration < currenttime) && ((item.getFlag() & ItemConstants.LOCK) == ItemConstants.LOCK)) {
-                                short lock = item.getFlag();
-                                lock &= ~(ItemConstants.LOCK);
-                                item.setFlag(lock); //Probably need a check, else people can make expiring items into permanent items...
-                                item.setExpiration(-1);
-                                forceUpdateItem(item);   //TEST :3
-                            } else if (expiration != -1 && expiration < currenttime) {
-                                if (!ItemConstants.isPet(item.getItemId())) {
-                                    sendPacket(PacketCreator.itemExpired(item.getItemId()));
-                                    toberemove.add(item);
-                                    if (ItemConstants.isRateCoupon(item.getItemId())) {
-                                        deletedCoupon = true;
-                                    }
-                                } else {
-                                    Pet pet = item.getPet();   // thanks Lame for noticing pets not getting despawned after expiration time
-                                    if (pet != null) {
-                                        unequipPet(pet, true);
-                                    }
-
-                                    if (ItemConstants.isExpirablePet(item.getItemId())) {
-                                        sendPacket(PacketCreator.itemExpired(item.getItemId()));
-                                        toberemove.add(item);
-                                    } else {
-                                        item.setExpiration(-1);
-                                        forceUpdateItem(item);
-                                    }
+                        ItemInformationProvider ii = ItemInformationProvider.getInstance();
+                        for (Item item : toberemove) {
+                            List<Integer> toadd = new ArrayList<>();
+                            Pair<Integer, String> replace = ii.getReplaceOnExpire(item.getItemId());
+                            if (replace.left > 0) {
+                                toadd.add(replace.left);
+                                if (!replace.right.isEmpty()) {
+                                    dropMessage(replace.right);
                                 }
+                            }
+                            for (Integer itemid : toadd) {
+                                InventoryManipulator.addById(client, itemid, (short) 1);
                             }
                         }
 
-                        if (!toberemove.isEmpty()) {
-                            for (Item item : toberemove) {
-                                InventoryManipulator.removeFromSlot(client, inv.getType(), item.getPosition(), item.getQuantity(), true);
-                            }
+                        toberemove.clear();
+                    }
 
-                            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                            for (Item item : toberemove) {
-                                List<Integer> toadd = new ArrayList<>();
-                                Pair<Integer, String> replace = ii.getReplaceOnExpire(item.getItemId());
-                                if (replace.left > 0) {
-                                    toadd.add(replace.left);
-                                    if (!replace.right.isEmpty()) {
-                                        dropMessage(replace.right);
-                                    }
-                                }
-                                for (Integer itemid : toadd) {
-                                    InventoryManipulator.addById(client, itemid, (short) 1);
-                                }
-                            }
-
-                            toberemove.clear();
-                        }
-
-                        if (deletedCoupon) {
-                            updateCouponRates();
-                        }
+                    if (deletedCoupon) {
+                        updateCouponRates();
                     }
                 }
             }, 60000);
@@ -4464,36 +4449,30 @@ public class Character extends AbstractCharacterObject {
             if (bHealingLvl > 0) {
                 final StatEffect healEffect = bHealing.getEffect(bHealingLvl);
                 int healInterval = (int) SECONDS.toMillis(healEffect.getX());
-                beholderHealingSchedule = TimerManager.getInstance().register(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (awayFromWorld.get()) {
-                            return;
-                        }
-
-                        addHP(healEffect.getHp());
-                        sendPacket(PacketCreator.showOwnBuffEffect(beholder, 2));
-                        getMap().broadcastMessage(Character.this, PacketCreator.summonSkill(getId(), beholder, 5), true);
-                        getMap().broadcastMessage(Character.this, PacketCreator.showOwnBuffEffect(beholder, 2), false);
+                beholderHealingSchedule = TimerManager.getInstance().register(() -> {
+                    if (awayFromWorld.get()) {
+                        return;
                     }
+
+                    addHP(healEffect.getHp());
+                    sendPacket(PacketCreator.showOwnBuffEffect(beholder, 2));
+                    getMap().broadcastMessage(Character.this, PacketCreator.summonSkill(getId(), beholder, 5), true);
+                    getMap().broadcastMessage(Character.this, PacketCreator.showOwnBuffEffect(beholder, 2), false);
                 }, healInterval, healInterval);
             }
             Skill bBuff = SkillFactory.getSkill(DarkKnight.HEX_OF_BEHOLDER);
             if (getSkillLevel(bBuff) > 0) {
                 final StatEffect buffEffect = bBuff.getEffect(getSkillLevel(bBuff));
                 int buffInterval = (int) SECONDS.toMillis(buffEffect.getX());
-                beholderBuffSchedule = TimerManager.getInstance().register(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (awayFromWorld.get()) {
-                            return;
-                        }
-
-                        buffEffect.applyTo(Character.this);
-                        sendPacket(PacketCreator.showOwnBuffEffect(beholder, 2));
-                        getMap().broadcastMessage(Character.this, PacketCreator.summonSkill(getId(), beholder, (int) (Math.random() * 3) + 6), true);
-                        getMap().broadcastMessage(Character.this, PacketCreator.showBuffEffect(getId(), beholder, 2), false);
+                beholderBuffSchedule = TimerManager.getInstance().register(() -> {
+                    if (awayFromWorld.get()) {
+                        return;
                     }
+
+                    buffEffect.applyTo(Character.this);
+                    sendPacket(PacketCreator.showOwnBuffEffect(beholder, 2));
+                    getMap().broadcastMessage(Character.this, PacketCreator.summonSkill(getId(), beholder, (int) (Math.random() * 3) + 6), true);
+                    getMap().broadcastMessage(Character.this, PacketCreator.showBuffEffect(getId(), beholder, 2), false);
                 }, buffInterval, buffInterval);
             }
         } else if (effect.isRecovery()) {
@@ -4506,27 +4485,24 @@ public class Character extends AbstractCharacterObject {
                     recoveryTask.cancel(false);
                 }
 
-                recoveryTask = TimerManager.getInstance().register(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getBuffSource(BuffStat.RECOVERY) == -1) {
-                            chrLock.lock();
-                            try {
-                                if (recoveryTask != null) {
-                                    recoveryTask.cancel(false);
-                                    recoveryTask = null;
-                                }
-                            } finally {
-                                chrLock.unlock();
+                recoveryTask = TimerManager.getInstance().register(() -> {
+                    if (getBuffSource(BuffStat.RECOVERY) == -1) {
+                        chrLock.lock();
+                        try {
+                            if (recoveryTask != null) {
+                                recoveryTask.cancel(false);
+                                recoveryTask = null;
                             }
-
-                            return;
+                        } finally {
+                            chrLock.unlock();
                         }
 
-                        addHP(heal);
-                        sendPacket(PacketCreator.showOwnRecovery(heal));
-                        getMap().broadcastMessage(Character.this, PacketCreator.showRecovery(id, heal), false);
+                        return;
                     }
+
+                    addHP(heal);
+                    sendPacket(PacketCreator.showOwnRecovery(heal));
+                    getMap().broadcastMessage(Character.this, PacketCreator.showRecovery(id, heal), false);
                 }, healInterval, healInterval);
             } finally {
                 chrLock.unlock();
@@ -5981,15 +5957,12 @@ public class Character extends AbstractCharacterObject {
         if (energybar >= 10000 && energybar < 11000) {
             energybar = 15000;
             final Character chr = this;
-            tMan.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    energybar = 0;
-                    List<Pair<BuffStat, Integer>> stat = Collections.singletonList(new Pair<>(BuffStat.ENERGY_CHARGE, energybar));
-                    setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
-                    sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
-                    getMap().broadcastPacket(chr, PacketCreator.cancelForeignFirstDebuff(id, ((long) 1) << 50));
-                }
+            tMan.schedule(() -> {
+                energybar = 0;
+                List<Pair<BuffStat, Integer>> stat = Collections.singletonList(new Pair<>(BuffStat.ENERGY_CHARGE, energybar));
+                setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
+                sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
+                getMap().broadcastPacket(chr, PacketCreator.cancelForeignFirstDebuff(id, ((long) 1) << 50));
             }, ceffect.getDuration());
         }
     }
@@ -6337,12 +6310,7 @@ public class Character extends AbstractCharacterObject {
             if (level == maxClassLevel) {
                 if (!this.isGM()) {
                     if (YamlConfig.config.server.PLAYERNPC_AUTODEPLOY) {
-                        ThreadManager.getInstance().newTask(new Runnable() {
-                            @Override
-                            public void run() {
-                                PlayerNPC.spawnPlayerNPC(GameConstants.getHallOfFameMapid(job), Character.this);
-                            }
-                        });
+                        ThreadManager.getInstance().newTask(() -> PlayerNPC.spawnPlayerNPC(GameConstants.getHallOfFameMapid(job), Character.this));
                     }
 
                     final String names = (getMedalText() + name);
@@ -6410,12 +6378,9 @@ public class Character extends AbstractCharacterObject {
                 InventoryManipulator.addById(client, ItemId.PERFECT_PITCH, (short) 1, "", -1);
             }
         } else if (level == 10) {
-            Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                    if (leaveParty()) {
-                        showHint("You have reached #blevel 10#k, therefore you must leave your #rstarter party#k.");
-                    }
+            Runnable r = () -> {
+                if (leaveParty()) {
+                    showHint("You have reached #blevel 10#k, therefore you must leave your #rstarter party#k.");
                 }
             };
 
@@ -7533,17 +7498,14 @@ public class Character extends AbstractCharacterObject {
         if (dragonBloodSchedule != null) {
             dragonBloodSchedule.cancel(false);
         }
-        dragonBloodSchedule = TimerManager.getInstance().register(new Runnable() {
-            @Override
-            public void run() {
-                if (awayFromWorld.get()) {
-                    return;
-                }
-
-                addHP(-bloodEffect.getX());
-                sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
-                getMap().broadcastMessage(Character.this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
+        dragonBloodSchedule = TimerManager.getInstance().register(() -> {
+            if (awayFromWorld.get()) {
+                return;
             }
+
+            addHP(-bloodEffect.getX());
+            sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
+            getMap().broadcastMessage(Character.this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
         }, 4000, 4000);
     }
 
@@ -8152,12 +8114,7 @@ public class Character extends AbstractCharacterObject {
 
     public void saveCharToDB() {
         if (YamlConfig.config.server.USE_AUTOSAVE) {
-            Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                    saveCharToDB(true);
-                }
-            };
+            Runnable r = () -> saveCharToDB(true);
 
             CharacterSaveService service = (CharacterSaveService) getWorldServer().getServiceAccess(WorldServices.SAVE_CHARACTER);
             service.registerSaveCharacter(this.getId(), r);
@@ -8573,12 +8530,7 @@ public class Character extends AbstractCharacterObject {
     public void sendPolice(int greason, String reason, int duration) {
         sendPacket(PacketCreator.sendPolice(String.format("You have been blocked by the#b %s Police for %s.#k", "Cosmic", reason)));
         this.isbanned = true;
-        TimerManager.getInstance().schedule(new Runnable() {
-            @Override
-            public void run() {
-                client.disconnect(false, false);
-            }
-        }, duration);
+        TimerManager.getInstance().schedule(() -> client.disconnect(false, false), duration);
     }
 
     public void sendPolice(String text) {
@@ -8589,15 +8541,6 @@ public class Character extends AbstractCharacterObject {
             client.disconnect(false, false);
         }
         log.info(message);
-        //Server.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
-        //sendPacket(PacketCreator.sendPolice(text));
-        //this.isbanned = true;
-        //TimerManager.getInstance().schedule(new Runnable() {
-        //    @Override
-        //    public void run() {
-        //        client.disconnect(false, false);
-        //    }
-        //}, 6000);
     }
 
     public void sendKeymap() {
@@ -8815,16 +8758,13 @@ public class Character extends AbstractCharacterObject {
         }
 
         final boolean chrDied = playerDied;
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                updatePartyMemberHP();    // thanks BHB (BHB88) for detecting a deadlock case within player stats.
+        Runnable r = () -> {
+            updatePartyMemberHP();    // thanks BHB (BHB88) for detecting a deadlock case within player stats.
 
-                if (chrDied) {
-                    playerDead();
-                } else {
-                    checkBerserk(isHidden());
-                }
+            if (chrDied) {
+                playerDead();
+            } else {
+                checkBerserk(isHidden());
             }
         };
         if (map != null) {
@@ -9532,12 +9472,7 @@ public class Character extends AbstractCharacterObject {
     public void startMapEffect(String msg, int itemId, int duration) {
         final MapEffect mapEffect = new MapEffect(msg, itemId);
         sendPacket(mapEffect.makeStartData());
-        TimerManager.getInstance().schedule(new Runnable() {
-            @Override
-            public void run() {
-                sendPacket(mapEffect.makeDestroyData());
-            }
-        }, duration);
+        TimerManager.getInstance().schedule(() -> sendPacket(mapEffect.makeDestroyData()), duration);
     }
 
     public void unequipAllPets() {
@@ -9748,12 +9683,7 @@ public class Character extends AbstractCharacterObject {
         try {
             if (!questExpirations.isEmpty()) {
                 if (questExpireTask == null) {
-                    questExpireTask = TimerManager.getInstance().register(new Runnable() {
-                        @Override
-                        public void run() {
-                            runQuestExpireTask();
-                        }
-                    }, SECONDS.toMillis(10));
+                    questExpireTask = TimerManager.getInstance().register(() -> runQuestExpireTask(), SECONDS.toMillis(10));
                 }
             }
         } finally {
@@ -9793,12 +9723,7 @@ public class Character extends AbstractCharacterObject {
         evtLock.lock();
         try {
             if (questExpireTask == null) {
-                questExpireTask = TimerManager.getInstance().register(new Runnable() {
-                    @Override
-                    public void run() {
-                        runQuestExpireTask();
-                    }
-                }, SECONDS.toMillis(10));
+                questExpireTask = TimerManager.getInstance().register(() -> runQuestExpireTask(), SECONDS.toMillis(10));
             }
 
             questExpirations.put(quest, Server.getInstance().getCurrentTime() + time);
@@ -9972,12 +9897,7 @@ public class Character extends AbstractCharacterObject {
 
         this.ban(reason);
         sendPacket(PacketCreator.sendPolice(String.format("You have been blocked by the#b %s Police for HACK reason.#k", "Cosmic")));
-        TimerManager.getInstance().schedule(new Runnable() {
-            @Override
-            public void run() {
-                client.disconnect(false, false);
-            }
-        }, 5000);
+        TimerManager.getInstance().schedule(() -> client.disconnect(false, false), 5000);
 
         Server.getInstance().broadcastGMMessage(this.getWorld(), PacketCreator.serverNotice(6, Character.makeMapleReadable(this.name) + " was autobanned for " + reason));
     }
@@ -10114,15 +10034,12 @@ public class Character extends AbstractCharacterObject {
 
     private void equipPendantOfSpirit() {
         if (pendantOfSpirit == null) {
-            pendantOfSpirit = TimerManager.getInstance().register(new Runnable() {
-                @Override
-                public void run() {
-                    if (pendantExp < 3) {
-                        pendantExp++;
-                        message("Pendant of the Spirit has been equipped for " + pendantExp + " hour(s), you will now receive " + pendantExp + "0% bonus exp.");
-                    } else {
-                        pendantOfSpirit.cancel(false);
-                    }
+            pendantOfSpirit = TimerManager.getInstance().register(() -> {
+                if (pendantExp < 3) {
+                    pendantExp++;
+                    message("Pendant of the Spirit has been equipped for " + pendantExp + " hour(s), you will now receive " + pendantExp + "0% bonus exp.");
+                } else {
+                    pendantOfSpirit.cancel(false);
                 }
             }, 3600000); //1 hour
         }
@@ -10313,19 +10230,16 @@ public class Character extends AbstractCharacterObject {
                 setFamilyEntry(null);
             }
 
-            getWorldServer().registerTimedMapObject(new Runnable() {
-                @Override
-                public void run() {
-                    client = null;  // clients still triggers handlers a few times after disconnecting
-                    map = null;
-                    setListener(null);
+            getWorldServer().registerTimedMapObject(() -> {
+                client = null;  // clients still triggers handlers a few times after disconnecting
+                map = null;
+                setListener(null);
 
-                    // thanks Shavit for noticing a memory leak with inventories holding owner object
-                    for (int i = 0; i < inventory.length; i++) {
-                        inventory[i].dispose();
-                    }
-                    inventory = null;
+                // thanks Shavit for noticing a memory leak with inventories holding owner object
+                for (int i = 0; i < inventory.length; i++) {
+                    inventory[i].dispose();
                 }
+                inventory = null;
             }, MINUTES.toMillis(5));
         }
     }
