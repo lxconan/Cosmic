@@ -1075,9 +1075,8 @@ public class Character extends AbstractCharacterObject {
 
     public void setMasteries(int jobId) {
         int[] skills = new int[4];
-        for (int i = 0; i > skills.length; i++) {
-            skills[i] = 0; //that initialization meng
-        }
+        Arrays.fill(skills, 0);
+
         if (jobId == 112) {
             skills[0] = Hero.ACHILLES;
             skills[1] = Hero.MONSTER_MAGNET;
