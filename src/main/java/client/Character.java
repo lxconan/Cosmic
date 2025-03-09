@@ -1711,7 +1711,7 @@ public class Character extends AbstractCharacterObject {
 
             if (idx == -1) {
                 if (lastVisitedMaps.size() == YamlConfig.config.server.MAP_VISITED_SIZE) {
-                    lastVisitedMaps.remove(0);
+                    lastVisitedMaps.removeFirst();
                 }
             } else {
                 WeakReference<MapleMap> mapRef = lastVisitedMaps.remove(idx);
