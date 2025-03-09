@@ -1489,11 +1489,11 @@ public class Character extends AbstractCharacterObject {
             mapEim.registerPlayer(this, false);
         }
 
-        MapleMap to = target; // warps directly to the target intead of the target's map id, this allows GMs to patrol players inside instances.
+        // warps directly to the target intead of the target's map id, this allows GMs to patrol players inside instances.
         if (pto == null) {
-            pto = to.getPortal(0);
+            pto = target.getPortal(0);
         }
-        changeMapInternal(to, pto.getPosition(), PacketCreator.getWarpToMap(to, pto.getId(), this));
+        changeMapInternal(target, pto.getPosition(), PacketCreator.getWarpToMap(target, pto.getId(), this));
         canWarpMap = false;
 
         canWarpCounter--;
