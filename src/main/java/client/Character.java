@@ -1862,19 +1862,16 @@ public class Character extends AbstractCharacterObject {
             final int skilllevel = getSkillLevel(BerserkX);
             if (skilllevel > 0) {
                 berserk = chr.getHp() * 100 / chr.getCurrentMaxHp() < BerserkX.getEffect(skilllevel).getX();
-                berserkSchedule = TimerManager.getInstance().register(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (awayFromWorld.get()) {
-                            return;
-                        }
+                berserkSchedule = TimerManager.getInstance().register(() -> {
+                    if (awayFromWorld.get()) {
+                        return;
+                    }
 
-                        sendPacket(PacketCreator.showOwnBerserk(skilllevel, berserk));
-                        if (!isHidden) {
-                            getMap().broadcastMessage(Character.this, PacketCreator.showBerserk(getId(), skilllevel, berserk), false);
-                        } else {
-                            getMap().broadcastGMMessage(Character.this, PacketCreator.showBerserk(getId(), skilllevel, berserk), false);
-                        }
+                    sendPacket(PacketCreator.showOwnBerserk(skilllevel, berserk));
+                    if (!isHidden) {
+                        getMap().broadcastMessage(Character.this, PacketCreator.showBerserk(getId(), skilllevel, berserk), false);
+                    } else {
+                        getMap().broadcastGMMessage(Character.this, PacketCreator.showBerserk(getId(), skilllevel, berserk), false);
                     }
                 }, 5000, 3000);
             }
