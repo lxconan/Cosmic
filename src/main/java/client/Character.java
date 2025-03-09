@@ -2012,7 +2012,7 @@ public class Character extends AbstractCharacterObject {
                 final Packet pickupPacket = PacketCreator.removeItemFromMap(mapitem.getObjectId(), (isPet) ? 5 : 2, this.getId(), isPet, petIndex);
 
                 Item mItem = mapitem.getItem();
-                boolean hasSpaceInventory = true;
+                boolean hasSpaceInventory;
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
                 if (ItemId.isNxCard(mapitem.getItemId()) || mapitem.getMeso() > 0 || ii.isConsumeOnPickup(mapitem.getItemId()) || (hasSpaceInventory = InventoryManipulator.checkSpace(client, mapitem.getItemId(), mItem.getQuantity(), mItem.getOwner()))) {
                     int mapId = this.getMapId();
