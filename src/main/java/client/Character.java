@@ -831,7 +831,7 @@ public class Character extends AbstractCharacterObject {
             }
             return ret;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            log.warn("Error banning character", ex);
         }
         return false;
     }
@@ -1864,7 +1864,7 @@ public class Character extends AbstractCharacterObject {
                 ps.setInt(2, id);
                 ps.executeUpdate();
             } catch (SQLException ex) {
-                ex.printStackTrace();
+                log.warn("Failed to delete skill from database", ex);
             }
         }
     }
@@ -2209,7 +2209,7 @@ public class Character extends AbstractCharacterObject {
                 ps.executeUpdate();
             }
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            log.warn("Failed to delete guild from database", ex);
         }
     }
 
@@ -2422,7 +2422,7 @@ public class Character extends AbstractCharacterObject {
             Server.getInstance().deleteCharacterEntry(accId, cid);
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Failed to delete character from database", e);
             return false;
         }
     }
@@ -2624,7 +2624,7 @@ public class Character extends AbstractCharacterObject {
         try {
             Server.getInstance().disbandGuild(guildid);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Failed to disband guild", e);
         }
     }
 
@@ -3381,7 +3381,7 @@ public class Character extends AbstractCharacterObject {
                 }
             }
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.warn("Failed to retrieve character from database", sqle);
         }
 
         return character;
@@ -5102,7 +5102,7 @@ public class Character extends AbstractCharacterObject {
         try {
             return Server.getInstance().getGuild(getGuildId(), getWorld(), this);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.warn("Failed to load guild for player {}", getName(), ex);
             return null;
         }
     }
@@ -5112,7 +5112,7 @@ public class Character extends AbstractCharacterObject {
             try {
                 return Server.getInstance().getAlliance(getGuild().getAllianceId());
             } catch (Exception ex) {
-                ex.printStackTrace();
+                log.warn("Failed to load alliance for player {}", getName(), ex);
             }
         }
 
@@ -5314,7 +5314,7 @@ public class Character extends AbstractCharacterObject {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Failed to retrieve Fredrick storage timestamp for player {}", getName(), e);
         }
 
         if (elapsedDays > 100) {
@@ -5986,7 +5986,7 @@ public class Character extends AbstractCharacterObject {
                 Server.getInstance().allianceMessage(allianceId, GuildPackets.updateAllianceJobLevel(this), getId(), -1);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Failed to update guild for player {}", getName(), e);
         }
     }
 
@@ -6757,7 +6757,7 @@ public class Character extends AbstractCharacterObject {
                 }
             }
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            log.warn("Failed to load character from database", sqle);
         }
 
         return ret;
@@ -7326,7 +7326,7 @@ public class Character extends AbstractCharacterObject {
 
             return ret;
         } catch (SQLException | RuntimeException e) {
-            e.printStackTrace();
+            log.warn("Failed to load character from database", e);
         }
         return null;
     }
@@ -7997,7 +7997,7 @@ public class Character extends AbstractCharacterObject {
             ps.setInt(4, id);
             ps.executeUpdate();
         } catch (SQLException se) {
-            se.printStackTrace();
+            log.warn("Failed to save guild status for character {}", name, se);
         }
     }
 
@@ -8770,7 +8770,7 @@ public class Character extends AbstractCharacterObject {
             ps.setInt(2, id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Failed to save hasMerchant for player {}", name, e);
         }
         hasMerchant = set;
     }
@@ -8784,7 +8784,7 @@ public class Character extends AbstractCharacterObject {
             ps.setInt(2, id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Failed to save merchant mesos for player {}", name, e);
             return;
         }
         merchantmeso = newAmount;
@@ -8797,7 +8797,7 @@ public class Character extends AbstractCharacterObject {
             ps.setInt(2, id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Failed to save merchant mesos for player {}", name, e);
             return;
         }
         merchantmeso = set;
@@ -10025,7 +10025,7 @@ public class Character extends AbstractCharacterObject {
             ps.setInt(4, accountid);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Error while blocking account", e);
         }
     }
 
@@ -10369,7 +10369,7 @@ public class Character extends AbstractCharacterObject {
             ps.setInt(2, getId());
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Failed to update last logout time for chr {}", getName(), e);
         }
     }
 
@@ -10591,115 +10591,6 @@ public class Character extends AbstractCharacterObject {
             return false;
         }
 
-        /*try (PreparedStatement ps = con.prepareStatement("UPDATE playernpcs SET name = ? WHERE name = ?")) {
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement("UPDATE gifts SET `from` = ? WHERE `from` = ?")) {
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-        try (PreparedStatement ps = con.prepareStatement("UPDATE dueypackages SET SenderName = ? WHERE SenderName = ?")) {
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement("UPDATE dueypackages SET SenderName = ? WHERE SenderName = ?")) {
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement("UPDATE inventoryitems SET owner = ? WHERE owner = ?")) { //GMS doesn't do this
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement("UPDATE mts_items SET owner = ? WHERE owner = ?")) { //GMS doesn't do this
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement("UPDATE newyear SET sendername = ? WHERE sendername = ?")) {
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement("UPDATE newyear SET receivername = ? WHERE receivername = ?")) {
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement("UPDATE notes SET `to` = ? WHERE `to` = ?")) {
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement("UPDATE notes SET `from` = ? WHERE `from` = ?")) {
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement("UPDATE nxcode SET retriever = ? WHERE retriever = ?")) {
-            ps.setString(1, newName);
-            ps.setString(2, oldName);
-            ps.executeUpdate();
-        } catch(SQLException e) { 
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Character ID : " + characterId);
-            return false;
-        }*/
-
         if (nameChangeId != -1) {
             try (PreparedStatement ps = con.prepareStatement("UPDATE namechanges SET completionTime = ? WHERE id = ?")) {
                 ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
@@ -10900,7 +10791,7 @@ public class Character extends AbstractCharacterObject {
             }
             return point;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Failed to get reward points for chr {}", getName(), e);
         }
         return -1;
     }
@@ -10912,7 +10803,7 @@ public class Character extends AbstractCharacterObject {
             ps.setInt(2, accountid);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Failed to set reward points for chr {}", getName(), e);
         }
     }
 
@@ -11085,7 +10976,7 @@ public class Character extends AbstractCharacterObject {
             ps.setInt(2, getClient().getAccID());
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Failed to set language for chr {}", getName(), e);
         }
     }
 
